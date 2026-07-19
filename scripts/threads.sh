@@ -14,6 +14,33 @@ BASE="https://graph.threads.net/v1.0"
 ACTION="${1:-help}"
 shift 2>/dev/null
 
+# Validate token before any action
+if [ "$ACTION" != "help" ] && [ "$ACTION" != "setup" ]; then
+  if [ -z "$THREADS_ACCESS_TOKEN" ] || [ "$THREADS_ACCESS_TOKEN" = "your_token_here" ]; then
+    echo "❌ No access token configured."
+    echo ""
+    echo "Run setup first:"
+    echo "  ./scripts/setup.sh"
+    exit 1
+  fi
+  if [ -z "$THREADS_USER_ID" ] || [ "$THREADS_USER_ID" = "your_user_id_here" ]; then
+    echo "❌ No user ID configured."
+    echo ""
+    echo "Run setup first:"
+    echo "  ./scripts/setup.sh"
+    exit 1
+  fi
+  # Validate token is still working
+  VALIDATION=$(curl -s "https://graph.threads.net/v1.0/me?fields=id&access_token=$THREADS_ACCESS_TOKEN" 2>&1)
+  if echo "$VALIDATION" | grep -q '"error"'; then
+    echo "❌ Token is invalid or expired."
+    echo ""
+    echo "Run setup to get a new token:"
+    echo "  ./scripts/setup.sh"
+    exit 1
+  fi
+fi
+
 case "$ACTION" in
   profile)
     curl -s "$BASE/$THREADS_USER_ID?fields=id,username,name,threads_profile_picture_url,threads_biography&access_token=$THREADS_ACCESS_TOKEN" | python3 -m json.tool
@@ -76,12 +103,16 @@ case "$ACTION" in
     [ -z "$1" ] && echo "Usage: $0 unhide <reply_id>" && exit 1
     curl -s -X POST "$BASE/$1/manage_reply" -F "hide=false" -F "access_token=$THREADS_ACCESS_TOKEN" | python3 -m json.tool
     ;;
+  setup)
+    exec "$(dirname "$0")/setup.sh"
+    ;;
   help|*)
     echo "Threads API CLI"
     echo ""
     echo "Usage: $0 <command> [args]"
     echo ""
     echo "Commands:"
+    echo "  setup                      Interactive setup wizard"
     echo "  profile                    Get profile info"
     echo "  posts [limit]              List your posts"
     echo "  thread <id>                Get a specific post"
