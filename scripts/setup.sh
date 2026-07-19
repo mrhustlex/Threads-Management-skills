@@ -37,6 +37,10 @@ echo "You need:"
 echo "  1. A Threads Access Token (from Meta Graph API Explorer)"
 echo "  2. Your Threads User ID"
 echo ""
+echo "Token types:"
+echo "  • Graph API Explorer tokens are long-lived (60 days)"
+echo "  • Short-lived tokens expire in 1 hour — you can exchange them below"
+echo ""
 
 # Step 1 — Token
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -82,6 +86,7 @@ if echo "$API_RESPONSE" | python3 -c "import sys,json; json.load(sys.stdin)" 2>/
     echo -e "${GREEN}✓ Valid!${NC}"
     echo ""
     echo "  Detected: @$USERNAME (ID: $USER_ID)"
+    echo "  Token type: long-lived (60 days)"
     echo ""
     read -p "Use this user ID? (Y/n) " USE_ID
     if [ "$USE_ID" = "n" ] || [ "$USE_ID" = "N" ]; then
@@ -101,6 +106,36 @@ else
   read -p "Enter your user ID manually (or press Enter to abort): " INPUT_USER_ID
   if [ -z "$INPUT_USER_ID" ]; then
     exit 1
+  fi
+fi
+
+# Short-lived token exchange option
+echo ""
+read -p "Is this a short-lived token (expires in 1 hour)? Exchange for long-lived? (y/N) " EXCHANGE
+if [ "$EXCHANGE" = "y" ] || [ "$EXCHANGE" = "Y" ]; then
+  echo ""
+  echo "To exchange, you need your App ID and App Secret from https://developers.facebook.com/"
+  echo ""
+  read -p "App ID: " APP_ID
+  read -p "App Secret: " APP_SECRET
+
+  if [ -n "$APP_ID" ] && [ -n "$APP_SECRET" ]; then
+    echo -n "Exchanging token... "
+    EXCHANGE_RESPONSE=$(curl -s "https://graph.threads.net/v1.0/access_token?grant_type=fb_exchange_token&client_id=$APP_ID&client_secret=$APP_SECRET&fb_exchange_token=$INPUT_TOKEN" 2>&1)
+
+    NEW_TOKEN=$(echo "$EXCHANGE_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null)
+
+    if [ -n "$NEW_TOKEN" ] && [ "$NEW_TOKEN" != "" ]; then
+      INPUT_TOKEN="$NEW_TOKEN"
+      echo -e "${GREEN}✓ Exchanged!${NC}"
+      echo "  New token: ${INPUT_TOKEN:0:8}...${INPUT_TOKEN: -4}"
+    else
+      echo -e "${RED}✗ Exchange failed${NC}"
+      echo "  Response: $EXCHANGE_RESPONSE"
+      echo "  Keeping original token."
+    fi
+  else
+    echo "Missing credentials — keeping original token."
   fi
 fi
 

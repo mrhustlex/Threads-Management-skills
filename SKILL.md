@@ -33,6 +33,7 @@ All commands via `threads-skill/scripts/threads.sh`:
 
 ```bash
 ./scripts/threads.sh profile                    # Get profile
+./scripts/threads.sh token                      # Check token status
 ./scripts/threads.sh posts 10                   # List posts
 ./scripts/threads.sh thread <id>                # Get single post
 ./scripts/threads.sh create "Hello!"            # Create text post

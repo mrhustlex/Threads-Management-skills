@@ -158,15 +158,29 @@ Valid metrics: `views` · `likes` · `replies` · `reposts` · `quotes` · `clic
 | Posts per 24h | 250 |
 | Search queries per 24h | 2,200 |
 | Max post length | 500 characters |
-| Short-lived token | 1 hour |
+| Short-lived token | 1 hour (Graph API Explorer: 60 days) |
 | Long-lived token | 60 days |
 
 ## Token Expired?
+
+Graph API Explorer tokens are **long-lived (60 days)**. If you have a short-lived token (1 hour), run:
+
+```bash
+./scripts/setup.sh    # offers to exchange for long-lived token
+```
+
+To manually refresh:
 
 1. Go to [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
 2. Select your app
 3. Generate a new token
 4. Update your `.env`
+
+Check current token status:
+
+```bash
+./scripts/threads.sh token
+```
 
 ## API Limitations
 

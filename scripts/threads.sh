@@ -115,6 +115,21 @@ case "$ACTION" in
     [ -z "$1" ] && echo "Usage: $0 unhide <reply_id>" && exit 1
     curl -s -X POST "$BASE/$1/manage_reply" -F "hide=false" -F "access_token=$THREADS_ACCESS_TOKEN" | python3 -m json.tool
     ;;
+  token)
+    echo "Token info:"
+    echo "  ${THREADS_ACCESS_TOKEN:0:8}...${THREADS_ACCESS_TOKEN: -4}"
+    echo ""
+    echo "Checking token status..."
+    RESP=$(curl -s "https://graph.threads.net/v1.0/me?fields=id&access_token=$THREADS_ACCESS_TOKEN")
+    if echo "$RESP" | grep -q '"error"'; then
+      echo "  Status: ❌ Invalid or expired"
+    else
+      echo "  Status: ✓ Valid"
+    fi
+    echo ""
+    echo "  Graph API Explorer tokens are long-lived (60 days)."
+    echo "  Run ./scripts/setup.sh to exchange a short-lived token."
+    ;;
   setup)
     exec "$(dirname "$0")/setup.sh"
     ;;
@@ -125,8 +140,9 @@ case "$ACTION" in
     echo ""
     echo "Commands:"
     echo "  setup                      Interactive setup wizard"
-    echo "  profile                    Get profile info"
-    echo "  posts [limit]              List your posts"
+  echo "  profile                    Get profile info"
+  echo "  token                      Check token status"
+  echo "  posts [limit]              List your posts"
     echo "  thread <id>                Get a specific post"
     echo "  create <text> [img] [rc]   Create a post (rc=reply_control)"
   echo "                             Use \\n for newlines in text"
