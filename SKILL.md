@@ -27,7 +27,7 @@ If `.env` already exists and is valid, the script will confirm and skip reconfig
 
 See `threads-skill/README.md` for manual setup instructions.
 
-## CLI usage
+## CLI Usage
 
 All commands via `threads-skill/scripts/threads.sh`:
 
@@ -46,11 +46,11 @@ All commands via `threads-skill/scripts/threads.sh`:
 ./scripts/threads.sh unhide <reply_id>          # Unhide reply
 ```
 
-## API reference
+## API Reference
 
 Base URL: `https://graph.threads.net/v1.0`
 
-### Create post (two-step)
+### Create Post (Two-Step)
 
 ```bash
 # Step 1: Create container
@@ -64,17 +64,7 @@ curl -s -X POST \
   "https://graph.threads.net/v1.0/$THREADS_USER_ID/threads_publish?creation_id=$CID&access_token=$THREADS_ACCESS_TOKEN"
 ```
 
-### Insights metrics
-
-Valid: `views`, `likes`, `replies`, `reposts`, `quotes`, `clicks`, `shares`
-
-**Do NOT use** `impressions` or `reach` — invalid for Threads.
-
-### Reply control
-
-Options: `everyone`, `accounts_you_follow`, `mentioned_only`, `parent_post_author_only`, `followers_only`
-
-### Hide/unhide reply
+### Hide/Unhide Reply
 
 ```bash
 curl -X POST -F "hide=true" -F "access_token=TOKEN" \
@@ -85,21 +75,36 @@ curl -X POST -F "hide=true" -F "access_token=TOKEN" \
 
 | Scope | Required for |
 |-------|-------------|
-| `threads_basic` | All endpoints |
+| `threads_basic` | All endpoints (required) |
 | `threads_content_publish` | Creating posts |
 | `threads_manage_insights` | Insights |
 | `threads_manage_replies` | Hide/unhide replies |
-| `threads_manage_mentions` | Mentions (needs advanced access for non-testers) |
-| `threads_keyword_search` | Search (needs advanced access for public posts) |
+| `threads_manage_mentions` | Mentions (needs advanced access) |
+| `threads_keyword_search` | Search (needs advanced access) |
 
-## Limits
+## Rate Limits
 
 - 250 posts per 24h per user
 - 2,200 search queries per 24h per user
 - Text posts: 500 chars max
 - Token expires: 1h (short), 60 days (long)
 
-## Not supported by API
+## Insights Metrics
 
+Valid: `views`, `likes`, `replies`, `reposts`, `quotes`, `clicks`, `shares`
+
+**Do NOT use** `impressions` or `reach` — invalid for Threads.
+
+## Reply Control
+
+Options: `everyone`, `accounts_you_follow`, `mentioned_only`, `parent_post_author_only`, `followers_only`
+
+## API Limitations
+
+The Threads API does not support:
 - Editing posts
 - Deleting posts
+
+## License
+
+MIT

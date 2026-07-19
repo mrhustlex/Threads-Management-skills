@@ -1,20 +1,28 @@
-# Threads Management Skills
+# Threads API CLI Skills
 
-A lightweight CLI tool and [opencode](https://opencode.ai) skill for managing your Threads.com account via the [Meta Graph API](https://developers.facebook.com/docs/threads).
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue.svg)]()
+[![opencode](https://img.shields.io/badge/opencode-skill-purple.svg)]()
+
+A lightweight CLI tool and [opencode](https://opencode.ai) skill for managing your [Threads.com](https://threads.net) account via the [Meta Graph API](https://developers.facebook.com/docs/threads).
+
+> Zero dependencies. Pure Bash + curl + jq.
 
 ## Features
 
-- **Profile** — View your account info
-- **Posts** — List, get, and create posts (text & image)
-- **Replies** — Read and send replies
-- **Insights** — Engagement metrics (views, likes, reposts, etc.)
-- **Mentions** — Posts where you're tagged
-- **Search** — Keyword search across public posts
-- **Moderation** — Hide/unhide replies
+| Feature | Description |
+|---------|-------------|
+| **Profile** | View your account info |
+| **Posts** | List, get, and create posts (text & image) |
+| **Replies** | Read and send replies |
+| **Insights** | Engagement metrics (views, likes, reposts, etc.) |
+| **Mentions** | Posts where you're tagged |
+| **Search** | Keyword search across public posts |
+| **Moderation** | Hide/unhide replies |
 
-## Install as opencode Skill
+## Install
 
-### Option 1 — Clone into opencode skills directory
+### As opencode Skill
 
 ```bash
 # Project-level (recommended)
@@ -24,47 +32,44 @@ git clone https://github.com/mrhustlex/threads-api-cli-skills.git .opencode/skil
 git clone https://github.com/mrhustlex/threads-api-cli-skills.git ~/.config/opencode/skills/threads-manager
 ```
 
-### Option 2 — Add via opencode.json
-
-```json
-{
-  "skills": {
-    "paths": ["/path/to/threads-api-cli-skills"]
-  }
-}
-```
-
-### Option 3 — External skills auto-discovery
-
-Clone to either:
-- `~/.claude/skills/threads-manager/`
-- `~/.agents/skills/threads-manager/`
-
 Then restart opencode. The skill auto-triggers on threads-related queries.
 
-## Quick Start (CLI only)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for other install methods.
+
+### Standalone CLI
 
 ```bash
-# Clone
 git clone https://github.com/mrhustlex/threads-api-cli-skills.git
 cd threads-api-cli-skills
-
-# Setup (interactive wizard)
-./scripts/setup.sh
-
-# Run
+./scripts/setup.sh    # interactive setup wizard
 ./scripts/threads.sh profile
 ```
 
-## Setup Guide
+## Setup
 
-### Step 1 — Create a Meta App
+```bash
+./scripts/setup.sh
+```
+
+The wizard will:
+1. Show step-by-step instructions to get a token from Graph API Explorer
+2. Ask you to paste the token (only in terminal, never in chat)
+3. Validate the token against the API
+4. Auto-detect your user ID
+5. Write `.env` with secure permissions (600)
+
+### Manual Setup
+
+<details>
+<summary>Click to expand</summary>
+
+**Step 1 — Create a Meta App**
 
 1. Go to [developers.facebook.com](https://developers.facebook.com/) → **My Apps** → **Create App**
 2. Select **Business** → name your app → **Create App**
 3. In the sidebar, click **Add Use Case** → select **Threads** → **Add**
 
-### Step 2 — Generate an Access Token
+**Step 2 — Generate an Access Token**
 
 1. Open [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
 2. Select your app from the dropdown
@@ -80,32 +85,24 @@ cd threads-api-cli-skills
 5. Authorize with your Threads account
 6. Copy the token
 
-### Step 3 — Get Your User ID
+**Step 3 — Get Your User ID**
 
 ```bash
 curl -s "https://graph.threads.net/v1.0/me?fields=id,username&access_token=YOUR_TOKEN"
 ```
 
-```json
-{ "id": "17841463932479189", "username": "your_username" }
-```
-
-Copy the `id` value.
-
-### Step 4 — Configure `.env`
+**Step 4 — Configure `.env`**
 
 ```bash
 cp .env.example .env
+# Edit with your token and user ID
 ```
 
-```env
-THREADS_ACCESS_TOKEN=EAADd...
-THREADS_USER_ID=17841463932479189
-```
+</details>
 
 ## Commands
 
-```
+```bash
 ./scripts/threads.sh <command> [args]
 ```
 
@@ -124,17 +121,13 @@ THREADS_USER_ID=17841463932479189
 | `hide` | `./scripts/threads.sh hide <reply_id>` | Hide a reply |
 | `unhide` | `./scripts/threads.sh unhide <reply_id>` | Unhide a reply |
 
-## Insights Metrics
+### Insights Metrics
 
-Valid metrics for the `insights` command:
-
-`views` · `likes` · `replies` · `reposts` · `quotes` · `clicks` · `shares`
+Valid metrics: `views` · `likes` · `replies` · `reposts` · `quotes` · `clicks` · `shares`
 
 > **Note:** `impressions` and `reach` are **not valid** for Threads.
 
-## Reply Control
-
-When creating posts, you can set who can reply:
+### Reply Control
 
 | Value | Who can reply |
 |-------|---------------|
@@ -146,15 +139,15 @@ When creating posts, you can set who can reply:
 
 ## Permissions
 
-| Scope | What it unlocks |
-|-------|----------------|
+| Scope | Required for |
+|-------|-------------|
 | `threads_basic` | All endpoints (required) |
-| `threads_content_publish` | Creating & publishing posts |
-| `threads_manage_insights` | Reading insights |
+| `threads_content_publish` | Creating posts |
+| `threads_manage_insights` | Insights |
 | `threads_manage_replies` | Hide/unhide replies |
 | `threads_read_replies` | Reading reply data |
-| `threads_manage_mentions` | Mention endpoint |
-| `threads_keyword_search` | Keyword search |
+| `threads_manage_mentions` | Mentions (needs App Review) |
+| `threads_keyword_search` | Search (needs App Review) |
 
 > **Note:** Mentions and search require [App Review](https://developers.facebook.com/docs/resp-protocol/app-review) approval for non-tester users.
 
@@ -175,11 +168,20 @@ When creating posts, you can set who can reply:
 3. Generate a new token
 4. Update your `.env`
 
-## Not Supported by API
+## API Limitations
 
+The Threads API does not support:
 - Editing posts
 - Deleting posts
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Code of Conduct
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
 ## License
 
-MIT
+[MIT](LICENSE)
