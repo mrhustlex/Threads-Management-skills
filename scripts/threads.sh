@@ -14,6 +14,15 @@ BASE="https://graph.threads.net/v1.0"
 ACTION="${1:-help}"
 shift 2>/dev/null
 
+# URL-encode text, interpreting \n and \r\n as real newlines
+urlencode_text() {
+  python3 -c "
+import sys, urllib.parse
+t = sys.argv[1].replace(r'\r\n', '\n').replace(r'\n', '\n')
+print(urllib.parse.quote(t, safe=''))
+" "$1"
+}
+
 # Validate token before any action
 if [ "$ACTION" != "help" ] && [ "$ACTION" != "setup" ]; then
   if [ -z "$THREADS_ACCESS_TOKEN" ] || [ "$THREADS_ACCESS_TOKEN" = "your_token_here" ]; then
@@ -58,8 +67,9 @@ case "$ACTION" in
     TEXT="$1"
     IMAGE="${2:-}"
     RC="${3:-everyone}"
-    PARAMS="media_type=TEXT&text=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$TEXT'))")&reply_control=$RC"
-    [ -n "$IMAGE" ] && PARAMS="media_type=IMAGE&image_url=$IMAGE&text=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$TEXT'))")&reply_control=$RC"
+    ENCODED=$(urlencode_text "$TEXT")
+    PARAMS="media_type=TEXT&text=$ENCODED&reply_control=$RC"
+    [ -n "$IMAGE" ] && PARAMS="media_type=IMAGE&image_url=$IMAGE&text=$ENCODED&reply_control=$RC"
     CONTAINER=$(curl -s -X POST "$BASE/$THREADS_USER_ID/threads?$PARAMS&access_token=$THREADS_ACCESS_TOKEN")
     CID=$(echo "$CONTAINER" | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))")
     [ -z "$CID" ] && echo "$CONTAINER" | python3 -m json.tool && exit 1
@@ -74,7 +84,8 @@ case "$ACTION" in
   reply)
     [ -z "$1" ] || [ -z "$2" ] && echo "Usage: $0 reply <thread_id> <text>" && exit 1
     TEXT="$2"
-    PARAMS="media_type=TEXT&reply_to_id=$1&text=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$TEXT'))")"
+    ENCODED=$(urlencode_text "$TEXT")
+    PARAMS="media_type=TEXT&reply_to_id=$1&text=$ENCODED"
     CONTAINER=$(curl -s -X POST "$BASE/$THREADS_USER_ID/threads?$PARAMS&access_token=$THREADS_ACCESS_TOKEN")
     CID=$(echo "$CONTAINER" | python3 -c "import sys,json;print(json.load(sys.stdin).get('id',''))")
     [ -z "$CID" ] && echo "$CONTAINER" | python3 -m json.tool && exit 1
@@ -93,7 +104,8 @@ case "$ACTION" in
   search)
     [ -z "$1" ] && echo "Usage: $0 search <query> [limit]" && exit 1
     LIMIT="${2:-10}"
-    curl -s "$BASE/keyword_search?q=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$1'))")&fields=id,text,username,timestamp&limit=$LIMIT&access_token=$THREADS_ACCESS_TOKEN" | python3 -m json.tool
+    ENCODED=$(urlencode_text "$1")
+    curl -s "$BASE/keyword_search?q=$ENCODED&fields=id,text,username,timestamp&limit=$LIMIT&access_token=$THREADS_ACCESS_TOKEN" | python3 -m json.tool
     ;;
   hide)
     [ -z "$1" ] && echo "Usage: $0 hide <reply_id>" && exit 1
@@ -117,6 +129,7 @@ case "$ACTION" in
     echo "  posts [limit]              List your posts"
     echo "  thread <id>                Get a specific post"
     echo "  create <text> [img] [rc]   Create a post (rc=reply_control)"
+  echo "                             Use \\n for newlines in text"
     echo "  replies <id>               Get replies to a post"
     echo "  reply <id> <text>          Reply to a post"
     echo "  insights <id> [metrics]    Get post insights"
