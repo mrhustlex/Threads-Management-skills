@@ -9,21 +9,23 @@ Manage a Threads.com account via the Meta Graph API.
 
 ## Setup
 
-1. Get access token from [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-2. Set env vars in `threads-skill/.env`:
-   ```
-   THREADS_ACCESS_TOKEN=your_token
-   THREADS_USER_ID=your_user_id
-   ```
+**Never paste your access token to the agent.** Run setup directly in your terminal:
 
-If the user doesn't have a token or .env, guide them through:
-1. Create a Meta app at developers.facebook.com
-2. Add Threads use case to the app
-3. Generate token in Graph API Explorer with threads_basic + threads_content_publish scopes
-4. Get user ID: `curl -s "https://graph.threads.net/v1.0/me?fields=id,username&access_token=TOKEN"`
-5. Copy `.env.example` to `.env` and fill in values
+```bash
+cd threads-skill
+./scripts/setup.sh
+```
 
-See `threads-skill/README.md` for full step-by-step instructions.
+The script will:
+1. Show step-by-step instructions to get a token from Graph API Explorer
+2. Ask you to paste the token (only in your terminal, not in chat)
+3. Validate the token against the API
+4. Auto-detect your user ID
+5. Write `.env` with secure permissions (600)
+
+If `.env` already exists and is valid, the script will confirm and skip reconfiguration.
+
+See `threads-skill/README.md` for manual setup instructions.
 
 ## CLI usage
 
