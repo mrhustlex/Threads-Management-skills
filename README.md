@@ -1,6 +1,6 @@
 # Threads Management Skills
 
-A lightweight CLI tool for managing your Threads.com account via the [Meta Graph API](https://developers.facebook.com/docs/threads).
+A lightweight CLI tool and [opencode](https://opencode.ai) skill for managing your Threads.com account via the [Meta Graph API](https://developers.facebook.com/docs/threads).
 
 ## Features
 
@@ -12,16 +12,45 @@ A lightweight CLI tool for managing your Threads.com account via the [Meta Graph
 - **Search** — Keyword search across public posts
 - **Moderation** — Hide/unhide replies
 
-## Quick Start
+## Install as opencode Skill
+
+### Option 1 — Clone into opencode skills directory
+
+```bash
+# Project-level (recommended)
+git clone https://github.com/mrhustlex/threads-api-cli-skills.git .opencode/skills/threads-manager
+
+# Or global
+git clone https://github.com/mrhustlex/threads-api-cli-skills.git ~/.config/opencode/skills/threads-manager
+```
+
+### Option 2 — Add via opencode.json
+
+```json
+{
+  "skills": {
+    "paths": ["/path/to/threads-api-cli-skills"]
+  }
+}
+```
+
+### Option 3 — External skills auto-discovery
+
+Clone to either:
+- `~/.claude/skills/threads-manager/`
+- `~/.agents/skills/threads-manager/`
+
+Then restart opencode. The skill auto-triggers on threads-related queries.
+
+## Quick Start (CLI only)
 
 ```bash
 # Clone
-git clone https://github.com/mrhustlex/Threads-Management-skills.git
-cd Threads-Management-skills
+git clone https://github.com/mrhustlex/threads-api-cli-skills.git
+cd threads-api-cli-skills
 
-# Configure
-cp .env.example .env
-# Edit .env with your token and user ID (see setup guide below)
+# Setup (interactive wizard)
+./scripts/setup.sh
 
 # Run
 ./scripts/threads.sh profile
